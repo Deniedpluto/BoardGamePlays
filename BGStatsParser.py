@@ -43,8 +43,8 @@ gameTags = gameTags.unnest('tags')
 playScores = playScores.unnest('playerScores')
 
 # Drop subtable columns
-games.drop('copies', 'tags')
-plays.drop('playerScores')
+games = games.drop('copies', 'tags')
+plays = plays.drop('playerScores')
 
 # Write out the data!
 tags.write_parquet("DIM_Tags.parquet")
