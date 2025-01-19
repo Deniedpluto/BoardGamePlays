@@ -22,17 +22,25 @@ games = polars.DataFrame(games).unnest('games')
 players = polars.DataFrame(players).unnest('players')
 locations = polars.DataFrame(locations).unnest('locations')
 plays = polars.DataFrame(plays).unnest('plays')
-# challenges = polars.DataFrame(challenges).unnest('challenges')
+# challenges = polars.DataFramgamee(challenges).unnest('challenges')
 
 # Pull out subtables
-gameCopies = games.get_column('copies').explode()
-gameTags = games.get_column('tags').explode()
-playScores = plays.get_column('playerScores').explode()
+gameCopies = games.select(polars.col(['uuid', 'copies']))
+gameTags = games.select(polars.col(['uuid', 'tags']))
+playScores = plays.select(polars.col(['uuid', 'playerScores']))
+
+# Explode the subitems
+gameCopies = gameCopies.explode('copies')
+gameTags = gameTags.explode('tags')
+playScores = playScores.explode('playerScores')
+
+# Change uuid column name since copies also has a uuid column and the unnest breaks if it is not changed
+gameCopies = gameCopies.rename({'uuid': 'game uuid'})
 
 # Convert subtables to tables
-gameCopies = polars.DataFrame(gameCopies).unnest('copies')
-gameTags = polars.DataFrame(gameTags).unnest('tags')
-playScores = polars.DataFrame(playScores).unnest('playerScores')
+gameCopies = gameCopies.unnest('copies')
+gameTags = gameTags.unnest('tags')
+playScores = playScores.unnest('playerScores')
 
 # Drop subtable columns
 games.drop('copies', 'tags')
