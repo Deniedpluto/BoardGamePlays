@@ -1,5 +1,5 @@
 import polars
-import fsspec
+import os
 
 # Load in the json data
 base_df = polars.read_json("BGStatsExport.json")
@@ -35,7 +35,7 @@ gameTags = gameTags.explode('tags')
 playScores = playScores.explode('playerScores')
 
 # Change uuid column name since copies also has a uuid column and the unnest breaks if it is not changed
-gameCopies = gameCopies.rename({'uuid': 'game uuid'})
+gameCopies = gameCopies.rename({'uuid': 'gameUuid'})
 
 # Convert subtables to tables
 gameCopies = gameCopies.unnest('copies')
@@ -43,10 +43,11 @@ gameTags = gameTags.unnest('tags')
 playScores = playScores.unnest('playerScores')
 
 # Drop subtable columns
-games = games.drop('copies', 'tags')
-plays = plays.drop('playerScores')
+games = games.drop('copies', 'tags', 'metaData')
+plays = plays.drop('playerScores', 'metaData', 'expansionPlays')
 
-# Write out the data!
+# Write out the parquet data! 
+os.chdir("./ParquetFiles")
 tags.write_parquet("DIM_Tags.parquet")
 groups.write_parquet("DIM_Groups.parquet")
 games.write_parquet("DIM_Games.parquet")
@@ -56,3 +57,16 @@ plays.write_parquet("FACT_Plays.parquet")
 gameCopies.write_parquet("DIM_Game_Copies.parquet")
 gameTags.write_parquet("DIM_Game_Tags.parquet")
 playScores.write_parquet("FACT_Play_Scores.parquet")
+
+# Write out the csv data!
+os.chdir("..")
+os.chdir("./CSVFiles")
+tags.write_csv("DIM_Tags.csv")
+groups.write_csv("DIM_Groups.csv")
+games.write_csv("DIM_Games.csv")
+players.write_csv("DIM_Players.csv")
+locations.write_csv("DIM_Locations.csv")
+plays.write_csv("FACT_Plays.csv")
+gameCopies.write_csv("DIM_Game_Copies.csv")
+gameTags.write_csv("DIM_Game_Tags.csv")
+playScores.write_csv("FACT_Play_Scores.csv")
